@@ -14,11 +14,13 @@ export function ListItems<T>({
   renderItem,
   keyExtractor,
   redirectBasePath,
+  headerText = "Меню",
 }: {
   url: string;
   renderItem: (item: T, index: number) => React.ReactNode;
   keyExtractor: (item: T) => string | number;
   redirectBasePath?: string;
+  headerText?: string;
 }) {
   const [items, setItems] = useState<any[]>([]);
   const [selectedItem, setSelectedItem] = useState<T | null>(null);
@@ -104,7 +106,7 @@ export function ListItems<T>({
       }`}>
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-black"> Меню</h1>
+          <h1 className="text-2xl font-bold text-black">{headerText}</h1>
         </div>
       </header>
       {body}

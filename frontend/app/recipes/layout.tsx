@@ -1,6 +1,5 @@
 "use client";
 import { ListItems } from "@/components/ui/List";
-import Api from "@/app/api/db_api";
 export default function RecepiesLayout({
   children,
 }: Readonly<{
@@ -18,6 +17,7 @@ export default function RecepiesLayout({
       renderItem={(item, index) => children}
       keyExtractor={(item) => item.id.toString()}
       redirectBasePath="/recipes"
+      headerText="Блюда"
     />
   );
 }

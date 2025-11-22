@@ -66,6 +66,16 @@ export default function RootLayout({
               href="/recipes">
               Блюда
             </Link>
+            <Link
+              className={
+                pathname.startsWith("/products")
+                  ? "text-yellow-300"
+                  : "text-white" +
+                    "text-base hover:text-yellow-300 transition duration-200"
+              }
+              href="/products">
+              Продукты
+            </Link>
           </div>
         </div>
         <main className="pt-14 p-2 sm:p-4 lg:p-6">{children}</main>
