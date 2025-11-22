@@ -53,10 +53,7 @@ export function ListItems<T>({
   ) : error ? (
     <div className="p-8 text-center text-red-600">{error}</div>
   ) : (
-    <div
-      className={`container mx-auto p-4 transition-all duration-300 ${
-        selectedItem ? "mr-80" : ""
-      }`}>
+    <div className="container mx-auto p-4">
       {/* Грид который становится меньше */}
       <div
         className={`grid gap-4 transition-all duration-300 ${
@@ -101,7 +98,10 @@ export function ListItems<T>({
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div
+      className={`min-h-screen transition-all duration-300 ${
+        selectedItem ? "pr-80" : ""
+      }`}>
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-black"> Меню</h1>
