@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body>
-        <div className="flex flex-row text-white items-center gap-10 p-5 h-15 bg-black">
+        <div className="flex flex-row sticky top-0 text-white items-center gap-10 p-5 h-15 bg-black">
           <Link
             className="bg-yellow-300 text-black font-bold text-lg rounded-lg px-4 py-2 flex items-center shadow-md transition duration-200 hover:bg-yellow-400"
             href="/menu">

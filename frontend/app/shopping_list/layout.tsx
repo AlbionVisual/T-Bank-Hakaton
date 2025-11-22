@@ -1,5 +1,6 @@
 "use client";
 import { ListItems } from "@/components/ui/List";
+import Api from "@/app/api/db_api";
 
 export default function ShoppingListLayout({
   children,
@@ -7,16 +8,10 @@ export default function ShoppingListLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ListItems<{
-      name: string;
-      description: string | undefined;
-      quantity: number;
-      id: number;
-      unit: string;
-    }>
-      url="/api/shopping_list"
+    <ListItems
+      url="products"
       renderItem={(item, index) => children}
-      keyExtractor={(item) => item.id.toString()}
+      keyExtractor={(item: any) => item.id.toString()}
     />
   );
 }

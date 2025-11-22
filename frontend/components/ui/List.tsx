@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Card } from "./Card";
+import Api from "@/app/api/db_api";
 
 interface Recipe {
   id: number;
@@ -8,15 +9,7 @@ interface Recipe {
   description: string;
 }
 
-export function ListItems<
-  T extends {
-    name: string;
-    description: string | undefined;
-    quantity: number | undefined;
-    unit: string | undefined;
-    id: number;
-  }
->({
+export function ListItems<T>({
   url,
   renderItem,
   keyExtractor,
@@ -27,7 +20,7 @@ export function ListItems<
   keyExtractor: (item: T) => string | number;
   redirectBasePath?: string;
 }) {
-  const [items, setItems] = useState<T[]>([]);
+  const [items, setItems] = useState<any[]>([]);
   const [selectedItem, setSelectedItem] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,16 +28,15 @@ export function ListItems<
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (url === "recipes") {
+          const response = await Api.getRecipes();
+          setItems(response);
+        } else if (url === "products") {
+          const response = await Api.getProducts();
+          setItems(response);
+        } else {
+          throw new Error("Неизвестный URL");
         }
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Response is not JSON");
-        }
-        const data = await response.json();
-        setItems(data);
       } catch (error) {
         console.error("Ошибка загрузки:", error);
         setError("Не удалось загрузить данные");

@@ -1,6 +1,7 @@
 # app.py — ПРАВИЛЬНО
 from flask import Flask, jsonify, request
 from database.db import init_db,get_db,close_db
+from flask_cors import CORS
 
 app = Flask(__name__)
 

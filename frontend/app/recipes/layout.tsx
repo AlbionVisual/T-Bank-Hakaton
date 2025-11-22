@@ -1,6 +1,6 @@
 "use client";
 import { ListItems } from "@/components/ui/List";
-
+import Api from "@/app/api/db_api";
 export default function RecepiesLayout({
   children,
 }: Readonly<{
@@ -14,7 +14,7 @@ export default function RecepiesLayout({
       unit: string | undefined;
       id: number;
     }>
-      url="/api/recipes"
+      url="recipes"
       renderItem={(item, index) => children}
       keyExtractor={(item) => item.id.toString()}
       redirectBasePath="/recipes"
