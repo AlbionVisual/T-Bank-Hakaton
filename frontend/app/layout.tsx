@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,20 +27,22 @@ export default function RootLayout({
     <html lang="ru">
       <body>
         
-        <div title="Админ-панель">
-          <button className="px-3 py-1 m-5 text-sm bg-gray-500 text-white rounded hover:bg-blue-600 transition">
+        <div className="flex flex-row text-white items-center gap-10 p-5 h-15 bg-black">
+        <Link  className="bg-yellow-300 text-black font-width-900 rounded p-4 flex items-center" href="/">T-перекус</Link>
 
-            Сохранить
-          </button>
-          <a href="/settings" className="text-gray-600 hover:text-gray-800">
-            Настройки
-          </a>
+        <Link className="text-white-500" href="/menu">
+          Меню
+        </Link>
+          <Link className="text-white-500" href="/shopping_list">
+          Список продуктов
+        </Link>
+          <Link className="text-white-500" href="/">
+          Home
+        </Link>
         </div>
 
-        {/* 2. Основной контент */}
-        <main className="pt-14 p-4 sm:p-6 lg:p-8">
-          {/* Важно: Добавьте padding-top (pt-14) к основному контенту, 
-             чтобы он не скрывался за фиксированным тулбаром. */}
+        <main className="pt-14 p-2 sm:p-4 lg:p-6">
+          
           {children}
         </main>
       </body>
