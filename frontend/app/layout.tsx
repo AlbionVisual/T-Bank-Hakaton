@@ -23,11 +23,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="ru">
+      <body>
+        
+        <div title="Админ-панель">
+          <button className="px-3 py-1 m-5 text-sm bg-gray-500 text-white rounded hover:bg-blue-600 transition">
+
+            Сохранить
+          </button>
+          <a href="/settings" className="text-gray-600 hover:text-gray-800">
+            Настройки
+          </a>
+        </div>
+
+        {/* 2. Основной контент */}
+        <main className="pt-14 p-4 sm:p-6 lg:p-8">
+          {/* Важно: Добавьте padding-top (pt-14) к основному контенту, 
+             чтобы он не скрывался за фиксированным тулбаром. */}
+          {children}
+        </main>
       </body>
     </html>
   );
