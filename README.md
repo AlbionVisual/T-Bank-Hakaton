@@ -9,9 +9,10 @@ pip install -r requirements.txt
 
 ## Старт (Фронтенд)
 
-Выполнять в папке фронтенда:
+ыполнять в папке `Front-end\react`:
 
 ```powershell
+cd Front-end\react
 npm install
 npm run dev
 ```
