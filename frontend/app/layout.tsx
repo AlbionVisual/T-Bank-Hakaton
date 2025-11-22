@@ -28,22 +28,28 @@ export default function RootLayout({
       <body>
         <div className="flex flex-row text-white items-center gap-10 p-5 h-15 bg-black">
           <Link
-            className="bg-yellow-300 text-black font-width-900 rounded p-4 flex items-center"
-            href="/">
+            className="bg-yellow-300 text-black font-bold text-lg rounded-lg px-4 py-2 flex items-center shadow-md transition duration-200 hover:bg-yellow-400"
+            href="/menu">
             T-перекус
           </Link>
-
-          <Link className="text-white-500" href="/menu">
-            Меню
-          </Link>
-          <Link className="text-white-500" href="/shopping_list">
-            Список продуктов
-          </Link>
-          <Link className="text-white-500" href="/">
-            Home
-          </Link>
+          <div className="flex items-center gap-8">
+            <Link
+              className="text-white text-base hover:text-yellow-300 transition duration-200"
+              href="/menu">
+              Меню
+            </Link>
+            <Link
+              className="text-white text-base hover:text-yellow-300 transition duration-200"
+              href="/shopping_list">
+              Список продуктов
+            </Link>
+            <Link
+              className="text-white text-base hover:text-yellow-300 transition duration-200"
+              href="/dishes">
+              Блюда
+            </Link>
+          </div>
         </div>
-
         <main className="pt-14 p-2 sm:p-4 lg:p-6">{children}</main>
       </body>
     </html>
