@@ -47,27 +47,30 @@ class Api {
     });
   }
 
-  updateRecipe(
-    id: number,
-    data: {
-      name?: string;
-      description?: string;
-      instructions?: string;
-    }
-  ) {
-    return this.request<{
-      message: string;
-      recipe: {
-        id: number;
-        name: string;
-        description: string;
-        instructions: string;
-      };
-    }>(`/recipes/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-    });
+
+async updateRecipeFull(
+  recipeId: number,
+  data: {
+    title?: string;
+    description?: string;
+    instructions?: string;
+    ingredients?: { product_id: number; amount: number }[];
   }
+) {
+  return this.request<{
+    message: string;
+    recipe: any;
+    ingredients: {
+      product_id: number;
+      product_name: string;
+      unit: string | null;
+      amount: number;
+    }[];
+  }>(`/recipes/${recipeId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
 
   deleteRecipe(id: number) {
     return this.request<{
