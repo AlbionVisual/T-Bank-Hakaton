@@ -33,7 +33,6 @@ export default function DishCard({ id }: RecipeDetailsProps) {
   if (!recipe) return <div>Loading...</div>;
 
   return (
-    // <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] w-80 bg-white shadow-lg border-l transform transition-transform duration-300">
     <div className="h-full">
       <h2 className="text-2xl font-bold mb-4">{recipe.title}</h2>
       <p className="text-gray-700 mb-6">{recipe.description}</p>
@@ -60,6 +59,5 @@ export default function DishCard({ id }: RecipeDetailsProps) {
         </p>
       </div>
     </div>
-    // </div>
   );
 }
