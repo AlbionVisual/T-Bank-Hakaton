@@ -349,12 +349,12 @@ def update_recipe(recipe_id):
     updates = []
     values = []
 
-    if "title" in data:
-        title = data["title"].strip()
-        if not title:
+    if "name" in data:
+        name = data["name"].strip()
+        if not name:
             return jsonify({"error": "Название не может быть пустым"}), 400
-        updates.append("title = ?")
-        values.append(title)
+        updates.append("name = ?")
+        values.append(name)
 
     if "description" in data:
         updates.append("description = ?")
@@ -390,7 +390,253 @@ def update_recipe(recipe_id):
             "details": str(e)
         }), 500
 
+@app.route('/menus', methods=['GET'])
+def get_recipes_in_menu():
+    db = get_db()
 
+    recipes = db.execute("""
+        SELECT 
+            r.id,
+            r.name,
+            r.description,
+            r.instructions
+        FROM recipes r
+        LEFT JOIN menu_recipes mr ON r.id = mr.recipe_id
+        WHERE mr.menu_id = 1
+        ORDER BY r.name
+    """).fetchall()
+
+    return jsonify([dict(row) for row in recipes])
+
+
+@app.route('/menus/<int:recipe_id>', methods=['POST'])
+def add_recipe_to_menu(recipe_id):
+    db = get_db()
+ 
+    recipe = db.execute("SELECT id, name FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
+    if not recipe:
+        return jsonify({"error": "Рецепт не найден"}), 404
+
+    try:
+        db.execute(
+            "INSERT INTO menu_recipes (menu_id, recipe_id) VALUES (?, ?)",
+            (1, recipe_id)
+        )
+        db.commit()
+
+        return jsonify({
+            "message": "Рецепт успешно добавлен в меню",
+            "added": {
+                "recipe_id": recipe_id,
+                "recipe_name": recipe["name"]
+            }
+        }), 201
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/menus/<int:recipe_id>', methods=['DELETE'])
+def remove_recipe_from_menu(recipe_id):
+    db = get_db()
+
+    link = db.execute(
+        """SELECT r.name 
+           FROM menu_recipes mr
+           JOIN recipes r ON mr.recipe_id = r.id
+           WHERE mr.menu_id = 1 AND mr.recipe_id = ?""",
+        (recipe_id)
+    ).fetchone()
+
+    if not link:
+        return jsonify({"error": "Рецепт не найден в этом меню"}), 404
+
+    try:
+        db.execute(
+            "DELETE FROM menu_recipes WHERE menu_id = 1 AND recipe_id = ?",
+            (recipe_id)
+        )
+        db.commit()
+
+        return jsonify({
+            "message": "Рецепт успешно удалён из меню",
+            "removed": {
+                "recipe_id": recipe_id,
+                "recipe_name": link["name"]
+            }
+        }), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/inventory', methods=['GET'])
+
+def get_inventory():
+
+    db = get_db()
+
+    products = db.execute("""
+        SELECT 
+            p.id,
+            p.name,
+            p.unit,
+            i.quantity
+        FROM products p
+        LEFT JOIN inventory i ON p.id = i.product_id
+        ORDER BY p.name
+    """).fetchall()
+
+    return jsonify([dict(row) for row in products])
+
+
+@app.route('/inventory', methods=['POST'])
+def add_to_inventory():
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({"error": "Нет данных в запросе"}), 400
+
+    product_id = data.get("product_id")
+    quantity = data.get("quantity")
+
+    if not product_id or quantity is None:
+        return jsonify({"error": "Укажите product_id и quantity"}), 400
+
+    if not isinstance(quantity, (int, float)) or quantity < 0:
+        return jsonify({"error": "quantity должно быть неотрицательным числом"}), 400
+
+    db = get_db()
+
+    product = db.execute(
+        "SELECT id, name, unit FROM products WHERE id = ?", 
+        (product_id,)
+    ).fetchone()
+
+    if not product:
+        return jsonify({"error": "Продукт с таким ID не найден"}), 404
+
+    exists = db.execute(
+        "SELECT quantity FROM inventory WHERE product_id = ?", 
+        (product_id,)
+    ).fetchone()
+
+    if exists:
+        return jsonify({
+            "error": "Продукт уже есть в инвентаре. Используйте PATCH или PUT для обновления"
+        }), 409
+
+    try:
+        db.execute(
+            "INSERT INTO inventory (product_id, quantity) VALUES (?, ?)",
+            (product_id, quantity)
+        )
+        db.commit()
+
+        return jsonify({
+            "message": "Продукт успешно добавлен в инвентарь",
+            "inventory_item": {
+                "product_id": product_id,
+                "product_name": product["name"],
+                "quantity": quantity,
+                "unit": product["unit"]
+            }
+        }), 201
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": "Ошибка при добавлении", "details": str(e)}), 500
+
+
+@app.route('/inventory/<int:product_id>', methods=['PUT'])
+def update_inventory(product_id):
+    """
+    Добавляет или обновляет количество продукта в инвентаре
+    PUT /inventory/7 → { "quantity": 500 }
+    → если продукта нет — создаёт, если есть — обновляет
+    """
+    data = request.get_json()
+
+    if not data or 'quantity' not in data:
+        return jsonify({"error": "Поле 'quantity' обязательно"}), 400
+
+    quantity = data['quantity']
+    if not isinstance(quantity, (int, float)) or quantity < 0:
+        return jsonify({"error": "quantity должно быть неотрицательным числом"}), 400
+
+    db = get_db()
+
+    # Проверяем, существует ли продукт
+    product = db.execute(
+        "SELECT id, name, unit FROM products WHERE id = ?", 
+        (product_id,)
+    ).fetchone()
+
+    if not product:
+        return jsonify({"error": "Продукт не найден"}), 404
+
+    try:
+        # Пробуем обновить существующую запись
+        result = db.execute(
+            "UPDATE inventory SET quantity = ? WHERE product_id = ?",
+            (quantity, product_id)
+        )
+
+        if result.rowcount == 0:
+            # Если не обновили — значит записи не было → создаём
+            db.execute(
+                "INSERT INTO inventory (product_id, quantity) VALUES (?, ?)",
+                (product_id, quantity)
+            )
+        else:
+            # Если обновили — всё ок
+            pass
+
+        db.commit()
+
+        return jsonify({
+            "message": "Инвентарь успешно обновлён",
+            "product": {
+                "id": product_id,
+                "name": product["name"],
+                "unit": product["unit"],
+                "quantity": quantity
+            }
+        }), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": "Ошибка базы данных", "details": str(e)}), 500
+
+
+@app.route('/inventory/<int:product_id>', methods=['DELETE'])
+def remove_from_inventory(product_id):
+    db = get_db()
+
+    product = db.execute("SELECT name FROM products WHERE id = ?", (product_id,)).fetchone()
+    if not product:
+        return jsonify({"error": "Продукт не найден"}), 404
+
+    try:
+        result = db.execute("DELETE FROM inventory WHERE product_id = ?", (product_id,))
+        db.commit()
+
+        if result.rowcount == 0:
+            return jsonify({"message": "Продукта и так не было в инвентаре"}), 200
+
+        return jsonify({
+            "message": "Продукт удалён из инвентаря",
+            "removed": {
+                "product_id": product_id,
+                "product_name": product["name"]
+            }
+        }), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    
 
 if __name__ == "__main__":
     app.run(debug=True)   

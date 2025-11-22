@@ -16,7 +16,6 @@ class Api {
       throw new Error(error.error || error.message || "Ошибка сервера");
     }
 
-    // Для DELETE и POST иногда бэкенд ничего не возвращает (204)
     if (response.status === 204) return {} as T;
     return response.json();
   }
@@ -144,6 +143,86 @@ updateProduct(id: number, data: { name?: string; unit?: string }) {
         amount: number;
       };
     }>(`/recipes/${recipeId}/ingredients/${productId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // ==================== МЕНЮ ====================
+  getRecipesByMenu() {
+    return this.request<
+      {
+        id: number;
+        name: string;
+        description: string;
+        instructions: string;
+      }[]
+    >(`/menus`);
+  }
+
+addRecipeToMenu(recipeId: number) {
+    return this.request<{
+      message: string;
+      added: {recipe_id: number; recipe_name: string };
+    }>(`/menus/${recipeId}`, {
+      method: "POST",
+    });
+  }
+
+  removeRecipeFromMenu(recipeId: number) {
+    return this.request<{
+      message: string;
+      removed: {recipe_id: number; recipe_name: string };
+    }>(`/menus/${recipeId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // ==================== ИНВЕНТАРЬ ====================
+  
+  getInventory() {
+    return this.request<
+      {
+        id: number;
+        name: string;
+        unit: string | null;
+        quantity: number | null;
+      }[]
+    >("/inventory");
+  }
+
+  addToInventory(productId: number, quantity: number) {
+    if (quantity <= 0) throw new Error("Количество должно быть больше 0");
+
+    return this.request<{
+      message: string;
+      inventory_item: {
+        product_id: number;
+        product_name: string;
+        quantity: number;
+        unit: string | null;
+      };
+    }>("/inventory", {
+      method: "POST",
+      body: JSON.stringify({ product_id: productId, quantity }),
+    });
+  }
+
+  updateInventory(productId: number, quantity: number) {
+    if (quantity < 0) throw new Error("Количество не может быть отрицательным");
+    return this.request<{
+      message: string;
+      inventory: { product_id: number; product_name: string; quantity: number; unit: string | null };
+    }>(`/inventory/${productId}`, {
+      method: "PUT",
+      body: JSON.stringify({ quantity }),
+    });
+  }
+
+  removeFromInventory(productId: number) {
+    return this.request<{
+      message: string;
+      removed: { product_id: number; product_name: string };
+    }>(`/inventory/${productId}`, {
       method: "DELETE",
     });
   }
