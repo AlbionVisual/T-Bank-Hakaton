@@ -443,6 +443,7 @@ def update_recipe_with_ingredients(recipe_id):
                 "SELECT product_id, amount FROM recipe_ingredients WHERE recipe_id = ?",
                 (recipe_id,)
             ).fetchall()
+
             current_dict = {row["product_id"]: row["amount"] for row in current}
 
             new_dict = {ing["product_id"]: ing["amount"] for ing in new_ingredients}
@@ -459,11 +460,7 @@ def update_recipe_with_ingredients(recipe_id):
                         (recipe_id, product_id, amount)
                     )
 
-            for product_id in current_dict.keys() - new_dict.keys():
-                db.execute(
-                    "DELETE FROM recipe_ingredients WHERE recipe_id = ? AND product_id = ?",
-                    (recipe_id, product_id)
-                )
+
 
         except Exception as e:
             db.rollback()
