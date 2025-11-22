@@ -1,10 +1,19 @@
 'use client'
 import { useState, useEffect } from 'react'
+import RecipeDetails from '../menu/RecipeDetails'
+
+interface Ingredient {
+  name: string
+  quantity: number
+  unit: string
+}
 
 interface Recipe {
   id: number
   title: string
   description: string
+  ingredients: Ingredient[]
+  instructions: string
 }
 
 export default function MenuPage() {
@@ -50,22 +59,12 @@ export default function MenuPage() {
         ))}
       </div>
 
-      {/* Правая панель */}
+      {/* Правая панель как компонента RecipeDetails.tsx */}
       {selectedRecipe && (
-        <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] w-80 bg-white shadow-lg border-l transform transition-transform duration-300">
-          <div className="p-6 h-full overflow-y-auto">
-            <button 
-              onClick={() => setSelectedRecipe(null)}
-              className="mb-6 text-gray-500 hover:text-gray-700 text-lg"
-            >
-              ✕ Закрыть
-            </button>
-            
-            <h2 className="text-2xl font-bold mb-4">{selectedRecipe.title}</h2>
-            <p className="text-gray-700 mb-6">{selectedRecipe.description}</p>
-          
-          </div>
-        </div>
+        <RecipeDetails 
+          recipe={selectedRecipe} 
+          onClose={() => setSelectedRecipe(null)} 
+        />
       )}
     </div>
   )
