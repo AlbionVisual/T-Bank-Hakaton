@@ -1,6 +1,5 @@
 "use client";
 import { ListItems } from "@/components/ui/List";
-import Api from "@/app/api/db_api";
 
 export default function ShoppingListLayout({
   children,
@@ -12,6 +11,7 @@ export default function ShoppingListLayout({
       url="products"
       renderItem={(item, index) => children}
       keyExtractor={(item: any) => item.id.toString()}
+      headerText="Что нужно купить для полноценного выбора блюд"
     />
   );
 }

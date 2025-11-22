@@ -1,18 +1,17 @@
 "use client";
 import { ListItems } from "@/components/ui/List";
 
-export default function MenuLayout({
+export default function ProductsLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <ListItems
-      url="recipes"
-      redirectBasePath="/menu"
+      url="products"
       renderItem={(item, index) => children}
-      keyExtractor={(item: any) => item.id}
-      headerText="Меню"
+      keyExtractor={(item: any) => item.id.toString()}
+      headerText="Продукты"
     />
   );
 }
