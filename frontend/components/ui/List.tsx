@@ -11,9 +11,9 @@ interface Recipe {
 export function ListItems<
   T extends {
     name: string;
-    description: string | null;
-    quantity: number | null;
-    unit: string | null;
+    description: string | undefined;
+    quantity: number | undefined;
+    unit: string | undefined;
     id: number;
   }
 >({
@@ -83,9 +83,11 @@ export function ListItems<
             redirect_url={
               redirectBasePath
                 ? `${redirectBasePath}/${keyExtractor(item)}`
-                : url + keyExtractor?.(item)
+                : undefined
             }
-            on_click={() => setSelectedItem(item)}
+            on_click={
+              redirectBasePath ? () => setSelectedItem(item) : undefined
+            }
           />
         ))}
       </div>

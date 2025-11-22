@@ -4,7 +4,7 @@ export async function GET() {
   const recipes = [
     {
       id: 1,
-      title: 'Паста Карбонара',
+      name: 'Паста Карбонара',
       description: 'Классическая итальянская паста с беконом и сыром',
       ingredients: [
         { name: 'Спагетти', quantity: 200, unit: 'г' },
@@ -17,7 +17,7 @@ export async function GET() {
     },
     {
       id: 2,
-      title: 'Салат Цезарь',
+      name: 'Салат Цезарь',
       description: 'Свежий салат с курицей и соусом цезарь',
       ingredients: [
         { name: 'Куриное филе', quantity: 300, unit: 'г' },
@@ -31,7 +31,7 @@ export async function GET() {
     },
     {
       id: 3,
-      title: 'Салат Цезарь',
+      name: 'Салат Цезарь',
       description: 'Свежий салат с курицей и соусом цезарь',
       ingredients: [
         { name: 'Куриное филе', quantity: 300, unit: 'г' },
@@ -45,7 +45,7 @@ export async function GET() {
     },
     {
       id: 5,
-      title: 'Салат Цезарь',
+      name: 'Салат Цезарь',
       description: 'Свежий салат с курицей и соусом цезарь',
       ingredients: [
         { name: 'Куриное филе', quantity: 300, unit: 'г' },

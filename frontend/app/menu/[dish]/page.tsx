@@ -1,4 +1,4 @@
-import DishCard from "@/components/dishes/DishCard";
+import DishCard from "../../../components/dishes/DishCard";
 
 export default async function Page({
   params,

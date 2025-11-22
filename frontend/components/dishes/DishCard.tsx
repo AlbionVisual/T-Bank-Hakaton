@@ -19,7 +19,7 @@ interface RecipeDetailsProps {
   id: number;
 }
 
-export default function RecipeDetails({ id }: RecipeDetailsProps) {
+export default function DishCard({ id }: RecipeDetailsProps) {
   const [recipe, setRecipe] = useState<RecipeDetails | null>(null);
   useEffect(() => {
     const fetchRecipe = async () => {

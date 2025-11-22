@@ -45,7 +45,7 @@ export default function RootLayout({
             </Link>
             <Link
               className="text-white text-base hover:text-yellow-300 transition duration-200"
-              href="/dishes">
+              href="/recipes">
               Блюда
             </Link>
           </div>

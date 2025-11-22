@@ -9,12 +9,12 @@ export default function ShoppingListLayout({
   return (
     <ListItems<{
       name: string;
+      description: string | undefined;
       quantity: number;
-      description: string | null;
       id: number;
       unit: string;
     }>
-      url="/api/shopping"
+      url="/api/shopping_list"
       renderItem={(item, index) => children}
       keyExtractor={(item) => item.id.toString()}
     />

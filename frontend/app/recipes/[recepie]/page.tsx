@@ -5,5 +5,5 @@ export default async function Page({
   params: Promise<{ recepie: string }>;
 }) {
   const { recepie } = await params;
-  return <DishCard dish={recepie} />;
+  return <DishCard id={Number(recepie)} />;
 }
