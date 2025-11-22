@@ -186,7 +186,7 @@ def update_ingredient_amount(recipe_id):
 
     db = get_db()
 
-    recipe = db.execute("SELECT id, title FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
+    recipe = db.execute("SELECT id, name FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
     if not recipe:
         return jsonify({"error": "Рецепт не найден"}), 404
 
@@ -393,14 +393,14 @@ def remove_ingredient_from_recipe(recipe_id, product_id):
         }), 500
     
 @app.route('/recipes/<int:recipe_id>', methods=['PATCH'])
-def update_recipe(recipe_id):
+def update_recipe_with_ingredients(recipe_id):
     data = request.get_json()
     if not data:
-        return jsonify({"error": "Нет данных в запросе"}), 400
+        return jsonify({"error": "Нет данных"}), 400
 
     db = get_db()
-    
-    recipe = db.execute("SELECT id FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
+
+    recipe = db.execute("SELECT id, name FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
     if not recipe:
         return jsonify({"error": "Рецепт не найден"}), 404
 
@@ -416,37 +416,75 @@ def update_recipe(recipe_id):
 
     if "description" in data:
         updates.append("description = ?")
-        values.append(data["description"].strip() if data["description"] else "")
+        values.append(data["description"] or "")
 
     if "instructions" in data:
         updates.append("instructions = ?")
-        values.append(data["instructions"].strip() if data["instructions"] else "")
+        values.append(data["instructions"] or "")
 
-    if not updates:
-        return jsonify({"error": "Нет полей для обновления"}), 400
+    if updates:
+        values.append(recipe_id)
+        db.execute(f"UPDATE recipes SET {', '.join(updates)} WHERE id = ?", tuple(values))
 
-    values.append(recipe_id)
+    if "ingredients" in data:
+        new_ingredients = data["ingredients"]
 
-    try:
-        db.execute(
-            f"UPDATE recipes SET {', '.join(updates)} WHERE id = ?",
-            tuple(values)
-        )
-        db.commit()
+        if not isinstance(new_ingredients, list):
+            return jsonify({"error": "ingredients должен быть массивом"}), 400
 
-        updated_recipe = db.execute("SELECT * FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
+        for ing in new_ingredients:
+            if not isinstance(ing, dict) or "product_id" not in ing or "amount" not in ing:
+                return jsonify({"error": "Каждый ингредиент должен содержать product_id и amount"}), 400
+            if not isinstance(ing["amount"], (int, float)) or ing["amount"] <= 0:
+                return jsonify({"error": "amount должен быть положительным числом"}), 400
 
-        return jsonify({
-            "message": "Рецепт успешно обновлён",
-            "recipe": dict(updated_recipe)
-        }), 200
+        try:
+            current = db.execute(
+                "SELECT product_id, amount FROM recipe_ingredients WHERE recipe_id = ?",
+                (recipe_id,)
+            ).fetchall()
+            current_dict = {row["product_id"]: row["amount"] for row in current}
 
-    except Exception as e:
-        db.rollback()
-        return jsonify({
-            "error": "Ошибка при обновлении рецепта",
-            "details": str(e)
-        }), 500
+            new_dict = {ing["product_id"]: ing["amount"] for ing in new_ingredients}
+
+            for product_id, amount in new_dict.items():
+                if product_id in current_dict:
+                    db.execute(
+                        "UPDATE recipe_ingredients SET amount = ? WHERE recipe_id = ? AND product_id = ?",
+                        (amount, recipe_id, product_id)
+                    )
+                else:
+                    db.execute(
+                        "INSERT INTO recipe_ingredients (recipe_id, product_id, amount) VALUES (?, ?, ?)",
+                        (recipe_id, product_id, amount)
+                    )
+
+            for product_id in current_dict.keys() - new_dict.keys():
+                db.execute(
+                    "DELETE FROM recipe_ingredients WHERE recipe_id = ? AND product_id = ?",
+                    (recipe_id, product_id)
+                )
+
+        except Exception as e:
+            db.rollback()
+            return jsonify({"error": "Ошибка при обновлении ингредиентов", "details": str(e)}), 500
+
+    db.commit()
+
+    updated_recipe = db.execute("SELECT * FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
+    ingredients = db.execute("""
+        SELECT p.id AS product_id, p.name AS product_name, p.unit, ri.amount
+        FROM recipe_ingredients ri
+        JOIN products p ON ri.product_id = p.id
+        WHERE ri.recipe_id = ?
+    """, (recipe_id,)).fetchall()
+
+    return jsonify({
+        "message": "Рецепт и ингредиенты успешно обновлены",
+        "recipe": dict(updated_recipe),
+        "ingredients": [dict(row) for row in ingredients]
+    }), 200
+
 
 @app.route('/menus', methods=['GET'])
 def get_recipes_in_menu():
@@ -687,7 +725,8 @@ def remove_from_inventory(product_id):
     except Exception as e:
         db.rollback()
         return jsonify({"error": str(e)}), 500
-    
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)   
