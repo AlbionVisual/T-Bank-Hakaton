@@ -179,5 +179,31 @@ def delete_product(product_id):
             "details": str(e)
         }), 500
 
+
+
+
+
+@app.route("/ingredients/<int:recipe_id>", methods=['GET'])
+def get_ingredients(recipe_id):
+    db = get_db()
+    ingredients = db.execute("""
+        SELECT 
+            p.id AS product_id,
+            p.name AS product_name,
+            p.unit AS product_unit,
+            ri.amount AS amount
+        FROM recipe_ingredients ri
+        JOIN products p ON ri.product_id = p.id
+        WHERE ri.recipe_id = ?
+        ORDER BY p.name
+    """, (recipe_id,)).fetchall()
+    if ingredients is None:
+        return jsonify({"error": "Ингридиенты не найдены"}), 404
+
+    return jsonify([dict(row) for row in ingredients])
+
+
+
+
 if __name__ == "__main__":
     app.run(debug=True)   
