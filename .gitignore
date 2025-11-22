@@ -1,0 +1,52 @@
+# ==================================================
+# Visual Studio Code & IDEs
+# ==================================================
+.vscode/
+.idea/
+*.suo
+*.user
+*.casync
+
+# ==================================================
+# Python Virtual Environment (venv)
+# ==================================================
+# Виртуальное окружение Python (обычно имеет имя "venv" или ".venv")
+# Это самое главное, что нужно игнорировать для Python
+venv/
+.venv/
+env/
+.env/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+
+# IDE-specific caches (PyCharm)
+.pytest_cache/
+
+# ==================================================
+# Vite & Node.js/Frontend
+# ==================================================
+# Зависимости Node.js
+node_modules/
+
+# Production build files (результат работы команды 'npm run build')
+dist/
+dist-ssr/
+
+# Логи NPM
+npm-debug.log
+yarn-error.log
+pnpm-error.log
+
+# Файлы конфигурации Vite/Rollup
+.vite/
+.rollup.cache/
+
+# ==================================================
+# OS generated files
+# ==================================================
+.DS_Store
+Thumbs.db
