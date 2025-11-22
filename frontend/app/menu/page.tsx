@@ -30,8 +30,7 @@ export default function MenuPage() {
   if (loading) return <div className="p-8 text-center">Загрузка рецептов...</div>
 
   return (
-    <div className={`container mx-auto p-4 transition-all duration-300 ${selectedRecipe ? 'mr-80' : ''}`}>
-
+    <div className={`p-4 transition-all duration-300 ${selectedRecipe ? 'mr-80' : 'container mx-auto'}`}>
       
       {/* Грид который становится меньше */}
       <div className={`grid gap-4 transition-all duration-300 ${
