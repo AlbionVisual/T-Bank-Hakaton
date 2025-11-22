@@ -8,7 +8,7 @@ export default function MenuLayout({
 }>) {
   return (
     <ListItems
-      url="recipes"
+      url="menus"
       redirectBasePath="/menu"
       renderItem={(item, index) => children}
       keyExtractor={(item: any) => item.id}

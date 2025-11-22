@@ -22,6 +22,7 @@ export function ListItems<T>({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
+  const [cardRenderKey, setCardRenderKey] = useState(0);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -31,6 +32,12 @@ export function ListItems<T>({
           setItems(response);
         } else if (url === "products") {
           const response = await Api.getProducts();
+          setItems(response);
+        } else if (url === "inventory") {
+          const response = await Api.getInventory();
+          setItems(response);
+        } else if (url === "menus") {
+          const response = await Api.getRecipesByMenu();
           setItems(response);
         } else {
           throw new Error("Неизвестный URL");
@@ -67,6 +74,14 @@ export function ListItems<T>({
           instructions: selectedItem.instructions,
         });
         // await Api.(selectedItem.id, ingredients);
+        setCardRenderKey((prev) => prev + 1);
+        setItems((prev) =>
+          prev.map((itm) =>
+            keyExtractor(itm) === keyExtractor(selectedItem)
+              ? { ...itm, ...selectedItem }
+              : itm
+          )
+        );
       } else {
         setEditMode(true);
       }
@@ -74,14 +89,12 @@ export function ListItems<T>({
   };
 
   const onFieldChange = (field: string, value: any) => {
-    console.log(field, value);
     const newIngredients = [...selectedItem.ingredients];
     if (field.startsWith("ingredients.")) {
       if (value === undefined) {
         newIngredients.splice(Number(field.split(".")[1]), 1);
       } else {
         const index = Number(field.split(".")[1]);
-
         newIngredients[index] = {
           ...newIngredients[index],
           [field.split(".")[2]]: value,
@@ -97,9 +110,9 @@ export function ListItems<T>({
     const resp = (await Api.getRecipe(Number(keyExtractor(item)))) as any;
     resp.ingredients = await Api.getIngredients(Number(keyExtractor(item)));
     setSelectedItem(resp);
+    setCardRenderKey((prev) => prev + 1);
   };
 
-  console.log(items);
   const body = loading ? (
     <div className="p-8 text-center">Загрузка...</div>
   ) : error ? (
@@ -114,13 +127,15 @@ export function ListItems<T>({
         }`}>
         {items.map((item, index) => (
           <Card
-            key={Number(keyExtractor?.(item))}
+            key={Number(keyExtractor?.(item)) + "_" + cardRenderKey}
             card_name={item.name}
             card_description={
               item.description
                 ? item.description
-                : item.quantity !== undefined
+                : item.quantity
                 ? `${item.quantity} ${item.unit}`
+                : item.unit !== undefined
+                ? item.unit
                 : ""
             }
             redirect_url={

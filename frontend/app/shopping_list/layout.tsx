@@ -8,7 +8,7 @@ export default function ShoppingListLayout({
 }>) {
   return (
     <ListItems
-      url="products"
+      url="inventory"
       renderItem={(item, index) => children}
       keyExtractor={(item: any) => item.id.toString()}
       headerText="Что нужно купить для полноценного выбора блюд"
