@@ -61,10 +61,12 @@ export function ListItems<T>({
               ingredient.product_id !== undefined &&
               ingredient.amount !== undefined
           );
-
-        // await Api.updateRecipe(selectedItem.id, selectedItem);
-        console.log("api update");
-        console.log(selectedItem);
+        await Api.updateRecipe(selectedItem.id, {
+          name: selectedItem.name,
+          description: selectedItem.description,
+          instructions: selectedItem.instructions,
+        });
+        // await Api.(selectedItem.id, ingredients);
       } else {
         setEditMode(true);
       }
@@ -97,6 +99,7 @@ export function ListItems<T>({
     setSelectedItem(resp);
   };
 
+  console.log(items);
   const body = loading ? (
     <div className="p-8 text-center">Загрузка...</div>
   ) : error ? (
@@ -111,11 +114,14 @@ export function ListItems<T>({
         }`}>
         {items.map((item, index) => (
           <Card
-            key={keyExtractor?.(item)}
+            key={Number(keyExtractor?.(item))}
             card_name={item.name}
             card_description={
-              item.description ??
-              (item.quantity ? `${item.quantity} ${item.unit}` : "")
+              item.description
+                ? item.description
+                : item.quantity !== undefined
+                ? `${item.quantity} ${item.unit}`
+                : ""
             }
             redirect_url={
               redirectBasePath

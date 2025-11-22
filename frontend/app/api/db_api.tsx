@@ -23,21 +23,21 @@ class Api {
   // === РЕЦЕПТЫ ===
   getRecipes() {
     return this.request<
-      { id: number; title: string; description: string; instructions: string }[]
+      { id: number; name: string; description: string; instructions: string }[]
     >("/recipes");
   }
 
   getRecipe(id: number) {
     return this.request<{
       id: number;
-      title: string;
+      name: string;
       description: string;
       instructions: string;
     }>("/recipes/" + id);
   }
 
   createRecipe(data: {
-    title: string;
+    name: string;
     description?: string;
     instructions?: string;
   }) {
@@ -50,7 +50,7 @@ class Api {
   updateRecipe(
     id: number,
     data: {
-      title?: string;
+      name?: string;
       description?: string;
       instructions?: string;
     }
@@ -59,7 +59,7 @@ class Api {
       message: string;
       recipe: {
         id: number;
-        title: string;
+        name: string;
         description: string;
         instructions: string;
       };
@@ -72,7 +72,7 @@ class Api {
   deleteRecipe(id: number) {
     return this.request<{
       message: string;
-      deleted_recipe: { id: number; title: string };
+      deleted_recipe: { id: number; name: string };
     }>("/recipes/" + id, {
       method: "DELETE",
     });
@@ -92,7 +92,7 @@ class Api {
     });
   }
 
-updateProduct(id: number, data: { name?: string; unit?: string }) {
+  updateProduct(id: number, data: { name?: string; unit?: string }) {
     return this.request(`/products/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
@@ -115,11 +115,7 @@ updateProduct(id: number, data: { name?: string; unit?: string }) {
     >(`/ingredients/${recipeId}`);
   }
 
-  addIngredientToRecipe(
-    recipeId: number,
-    productId: number,
-    amount: number
-  ) {
+  addIngredientToRecipe(recipeId: number, productId: number, amount: number) {
     return this.request<{
       message: string;
       ingredient: {
@@ -159,10 +155,10 @@ updateProduct(id: number, data: { name?: string; unit?: string }) {
     >(`/menus`);
   }
 
-addRecipeToMenu(recipeId: number) {
+  addRecipeToMenu(recipeId: number) {
     return this.request<{
       message: string;
-      added: {recipe_id: number; recipe_name: string };
+      added: { recipe_id: number; recipe_name: string };
     }>(`/menus/${recipeId}`, {
       method: "POST",
     });
@@ -171,14 +167,14 @@ addRecipeToMenu(recipeId: number) {
   removeRecipeFromMenu(recipeId: number) {
     return this.request<{
       message: string;
-      removed: {recipe_id: number; recipe_name: string };
+      removed: { recipe_id: number; recipe_name: string };
     }>(`/menus/${recipeId}`, {
       method: "DELETE",
     });
   }
 
   // ==================== ИНВЕНТАРЬ ====================
-  
+
   getInventory() {
     return this.request<
       {
@@ -211,7 +207,12 @@ addRecipeToMenu(recipeId: number) {
     if (quantity < 0) throw new Error("Количество не может быть отрицательным");
     return this.request<{
       message: string;
-      inventory: { product_id: number; product_name: string; quantity: number; unit: string | null };
+      inventory: {
+        product_id: number;
+        product_name: string;
+        quantity: number;
+        unit: string | null;
+      };
     }>(`/inventory/${productId}`, {
       method: "PUT",
       body: JSON.stringify({ quantity }),
