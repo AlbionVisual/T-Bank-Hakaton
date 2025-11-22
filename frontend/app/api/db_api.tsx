@@ -143,6 +143,30 @@ class Api {
     });
   }
 
+
+  async updateIngredientAmount(
+    recipeId: number,
+    productId: number,
+    amount: number
+  ) {
+    if (amount <= 0) throw new Error("Количество должно быть больше 0");
+
+    return this.request<{
+      message: string;
+      ingredient: {
+        recipe_id: number;
+        recipe_title: string;
+        product_id: number;
+        product_name: string;
+        amount: number;
+        unit: string;
+      };
+    }>(`/ingredients/${recipeId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ product_id: productId, amount }),
+    });
+  }
+
   // ==================== МЕНЮ ====================
   getRecipesByMenu() {
     return this.request<

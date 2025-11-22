@@ -171,7 +171,65 @@ def delete_product(product_id):
             "details": str(e)
         }), 500
 
+@app.route('/ingredients/<int:recipe_id>', methods=['PATCH'])
+def update_ingredient_amount(recipe_id):
+    data = request.get_json()
 
+    if not data or 'product_id' not in data or 'amount' not in data:
+        return jsonify({"error": "Укажите product_id и amount"}), 400
+
+    product_id = data['product_id']
+    new_amount = data['amount']
+
+    if not isinstance(new_amount, (int, float)) or new_amount <= 0:
+        return jsonify({"error": "amount должен быть положительным числом"}), 400
+
+    db = get_db()
+
+    recipe = db.execute("SELECT id, title FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
+    if not recipe:
+        return jsonify({"error": "Рецепт не найден"}), 404
+
+    current = db.execute("""
+        SELECT ri.amount, p.name, p.unit
+        FROM recipe_ingredients ri
+        JOIN products p ON ri.product_id = p.id
+        WHERE ri.recipe_id = ? AND ri.product_id = ?
+    """, (recipe_id, product_id)).fetchone()
+
+    if not current:
+        return jsonify({
+            "error": "Этот продукт не используется в данном рецепте"
+        }), 404
+
+    try:
+        db.execute("""
+            UPDATE recipe_ingredients
+            SET amount = ?
+            WHERE recipe_id = ? AND product_id = ?
+        """, (new_amount, recipe_id, product_id))
+        db.commit()
+
+        return jsonify({
+            "message": "Количество ингредиента обновлено",
+            "ingredient": {
+                "recipe_id": recipe_id,
+                "recipe_name": recipe["name"],
+                "product_id": product_id,
+                "product_name": current["name"],
+                "amount": new_amount,
+                "unit": current["unit"]
+            }
+        }), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({
+            "error": "Ошибка при обновлении ингредиента",
+            "details": str(e)
+        }), 500
+    
+    
 @app.route('/products/<int:product_id>', methods=['PUT'])
 def update_product(product_id):
     data = request.get_json()
@@ -551,11 +609,6 @@ def add_to_inventory():
 
 @app.route('/inventory/<int:product_id>', methods=['PUT'])
 def update_inventory(product_id):
-    """
-    Добавляет или обновляет количество продукта в инвентаре
-    PUT /inventory/7 → { "quantity": 500 }
-    → если продукта нет — создаёт, если есть — обновляет
-    """
     data = request.get_json()
 
     if not data or 'quantity' not in data:
@@ -567,7 +620,7 @@ def update_inventory(product_id):
 
     db = get_db()
 
-    # Проверяем, существует ли продукт
+
     product = db.execute(
         "SELECT id, name, unit FROM products WHERE id = ?", 
         (product_id,)
@@ -584,13 +637,11 @@ def update_inventory(product_id):
         )
 
         if result.rowcount == 0:
-            # Если не обновили — значит записи не было → создаём
             db.execute(
                 "INSERT INTO inventory (product_id, quantity) VALUES (?, ?)",
                 (product_id, quantity)
             )
         else:
-            # Если обновили — всё ок
             pass
 
         db.commit()
