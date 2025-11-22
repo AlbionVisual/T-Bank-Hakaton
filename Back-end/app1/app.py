@@ -5,6 +5,12 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
+CORS(app, resources={r"/*": {
+    "origins": "http://localhost:3000",
+    "methods": ["GET", "POST", "DELETE", "OPTIONS"],
+    "allow_headers": ["Content-Type", "Authorization"],
+    "supports_credentials": True
+}})
 #Работа с рецептами 
 
 @app.route("/recipes", methods=['GET'])
