@@ -12,7 +12,7 @@ with app.app_context():
 def index():
     
     db = get_db()
-    recipes = db.execute("SELECT * FROM recipes").fetchall()
+    recipes = db.execute("SELECT id, title, description FROM recipes ORDER BY title").fetchall()
     return f"Найдено рецептов: {len(recipes)}"
 
 if __name__ == "__main__":
