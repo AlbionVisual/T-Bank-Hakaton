@@ -48,6 +48,28 @@ class Api {
     });
   }
 
+  updateRecipe(
+    id: number,
+    data: {
+      title?: string;
+      description?: string;
+      instructions?: string;
+    }
+  ) {
+    return this.request<{
+      message: string;
+      recipe: {
+        id: number;
+        title: string;
+        description: string;
+        instructions: string;
+      };
+    }>(`/recipes/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
   deleteRecipe(id: number) {
     return this.request<{
       message: string;
@@ -71,6 +93,13 @@ class Api {
     });
   }
 
+updateProduct(id: number, data: { name?: string; unit?: string }) {
+    return this.request(`/products/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
   deleteProduct(id: number) {
     return this.request("/products/" + id, { method: "DELETE" });
   }
@@ -85,6 +114,38 @@ class Api {
         amount: number;
       }[]
     >(`/ingredients/${recipeId}`);
+  }
+
+  addIngredientToRecipe(
+    recipeId: number,
+    productId: number,
+    amount: number
+  ) {
+    return this.request<{
+      message: string;
+      ingredient: {
+        recipe_id: number;
+        product_id: number;
+        product_name: string;
+        amount: number;
+        unit: string;
+      };
+    }>(`/recipes/${recipeId}/ingredients`, {
+      method: "POST",
+      body: JSON.stringify({ product_id: productId, amount }),
+    });
+  }
+
+  removeIngredientFromRecipe(recipeId: number, productId: number) {
+    return this.request<{
+      message: string;
+      removed_ingredient: {
+        product_name: string;
+        amount: number;
+      };
+    }>(`/recipes/${recipeId}/ingredients/${productId}`, {
+      method: "DELETE",
+    });
   }
 }
 

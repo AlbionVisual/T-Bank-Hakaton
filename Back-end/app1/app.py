@@ -38,8 +38,8 @@ def add_recipe():
     data = request.get_json()
     if not data:
         return jsonify({"error": "Нет данных в запросе"}), 400
-    title = data.get("title") or data.get("name")
-    if not title:
+    name = data.get("name") or data.get("name")
+    if not name:
         return jsonify({"error": "Не указано название рецепта"}), 400
     
     description = data.get("description", "")
@@ -48,18 +48,17 @@ def add_recipe():
     db = get_db()
     try:
         cursor = db.execute(
-            """INSERT INTO recipes (title, description, instructions) 
-               VALUES (?, ?, ?)""", (title, description, instructions)
+            """INSERT INTO recipes (name, description, instructions) 
+               VALUES (?, ?, ?)""", (name, description, instructions)
         )
         db.commit()  
 
         new_recipe_id = cursor.lastrowid  
-
         return jsonify({
             "message": "Рецепт успешно добавлен",
             "recipe": {
                 "id": new_recipe_id,
-                "title": title,
+                "name": name,
                 "description": description,
                 "instructions": instructions
             }
@@ -73,7 +72,7 @@ def delete_recipe(recipe_id):
     db = get_db()
     
     recipe = db.execute(
-        "SELECT id, title FROM recipes WHERE id = ?",
+        "SELECT id, name FROM recipes WHERE id = ?",
         (recipe_id,)
     ).fetchone()
     
@@ -81,15 +80,13 @@ def delete_recipe(recipe_id):
         return jsonify({"error": "Рецепт не найден"}), 404
     
     try:
-        
         db.execute("DELETE FROM recipes WHERE id = ?", (recipe_id,))
         db.commit()
-        
         return jsonify({
             "message": "Рецепт успешно удалён",
             "deleted_recipe": {
                 "id": recipe_id,
-                "title": recipe["title"]
+                "name": recipe["name"]
             }
         }), 200
         
@@ -108,18 +105,6 @@ def get_products():
     products = db.execute("SELECT * FROM products").fetchall()
 
     return jsonify([dict(row) for row in products])
-
-@app.route("/products/<int:product_id>", methods=['GET'])
-def get_product(product_id):
-    db = get_db()
-    product = db.execute(
-        "SELECT * FROM products WHERE id = ?",
-        (product_id,)
-    ).fetchone() 
-    if product is None:
-        return jsonify({"error": "Продукт не найден"}), 404
-
-    return jsonify(dict(product))
 
 @app.route('/products', methods=['POST'])
 def add_product():
@@ -154,6 +139,7 @@ def add_product():
     except Exception as e:
         return jsonify({"error": "Ошибка при добавлении продукта", "details": str(e)}), 500
 
+
 @app.route('/products/<int:product_id>', methods=['DELETE'])
 def delete_product(product_id):
     db = get_db()
@@ -167,7 +153,6 @@ def delete_product(product_id):
         return jsonify({"error": "Продукт не найден"}), 404
     
     try:
-        
         db.execute("DELETE FROM products WHERE id = ?", (product_id,))
         db.commit()
         
@@ -187,8 +172,105 @@ def delete_product(product_id):
         }), 500
 
 
+@app.route('/products/<int:product_id>', methods=['PUT'])
+def update_product(product_id):
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({"error": "Нет данных в запросе"}), 400
+
+    db = get_db()
+    product = db.execute(
+        "SELECT id, name, unit FROM products WHERE id = ?",
+        (product_id,)
+    ).fetchone()
+
+    if product is None:
+        return jsonify({"error": "Продукт не найден"}), 404
+
+    new_name = data.get("name", product["name"]).strip()
+    new_unit = data.get("unit", product["unit"] or "").strip()
+
+    if not new_name:
+        return jsonify({"error": "Название продукта не может быть пустым"}), 400
+    try:
+        db.execute(
+            """UPDATE products 
+               SET name = ?, unit = ? 
+               WHERE id = ?""",
+            (new_name, new_unit or None, product_id)
+        )
+        db.commit()
+
+        return jsonify({
+            "message": "Продукт успешно обновлён",
+            "product": {
+                "id": product_id,
+                "name": new_name,
+                "unit": new_unit or None
+            }
+        }), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({
+            "error": "Не удалось обновить продукт",
+            "details": str(e)
+        }), 500
+
+@app.route('/recipes/<int:recipe_id>/ingredients', methods=['POST'])
+def add_ingredient_to_recipe(recipe_id):
 
 
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({"error": "Нет данных в запросе"}), 400
+
+    product_id = data.get("product_id")
+    amount = data.get("amount")
+
+    if not product_id or amount is None:
+        return jsonify({"error": "Необходимо указать product_id и amount"}), 400
+
+    db = get_db()
+    recipe = db.execute("SELECT id, name FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
+    if not recipe:
+        return jsonify({"error": "Рецепт не найден"}), 404
+
+    
+    product = db.execute("SELECT id, name, unit FROM products WHERE id = ?", (product_id,)).fetchone()
+    if not product:
+        return jsonify({"error": "Продукт не найден"}), 404
+
+
+    try:
+        db.execute(
+            """INSERT INTO recipe_ingredients (recipe_id, product_id, amount)
+               VALUES (?, ?, ?)""",
+            (recipe_id, product_id, amount)
+        )
+        db.commit()
+
+        return jsonify({
+            "message": "Ингредиент успешно добавлен в рецепт",
+            "ingredient": {
+                "recipe_id": recipe_id,
+                "recipe_name": recipe["name"],
+                "product_id": product_id,
+                "product_name": product["name"],
+                "amount": amount,
+                "unit": product["unit"]
+            }
+        }), 201
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({
+            "error": "Не удалось добавить ингредиент",
+            "details": str(e)
+        }), 500
+    
 
 @app.route("/ingredients/<int:recipe_id>", methods=['GET'])
 def get_ingredients(recipe_id):
@@ -209,6 +291,104 @@ def get_ingredients(recipe_id):
 
     return jsonify([dict(row) for row in ingredients])
 
+@app.route('/recipes/<int:recipe_id>/ingredients/<int:product_id>', methods=['DELETE'])
+def remove_ingredient_from_recipe(recipe_id, product_id):
+
+    db = get_db()
+
+    ingredient = db.execute(
+        """SELECT ri.amount, p.name, p.unit
+           FROM recipe_ingredients ri
+           JOIN products p ON ri.product_id = p.id
+           WHERE ri.recipe_id = ? AND ri.product_id = ?""",
+        (recipe_id, product_id)
+    ).fetchone()
+
+    if not ingredient:
+        return jsonify({
+            "error": "Этот продукт не используется в данном рецепте"
+        }), 404
+
+    try:
+        db.execute(
+            "DELETE FROM recipe_ingredients WHERE recipe_id = ? AND product_id = ?",
+            (recipe_id, product_id)
+        )
+        db.commit()
+
+        return jsonify({
+            "message": "Ингредиент успешно удалён из рецепта",
+            "removed_ingredient": {
+                "recipe_id": recipe_id,
+                "product_id": product_id,
+                "product_name": ingredient["name"],
+                "amount": ingredient["amount"],
+                "unit": ingredient["unit"] or "шт"
+            }
+        }), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({
+            "error": "Не удалось удалить ингредиент",
+            "details": str(e)
+        }), 500
+    
+@app.route('/recipes/<int:recipe_id>', methods=['PATCH'])
+def update_recipe(recipe_id):
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Нет данных в запросе"}), 400
+
+    db = get_db()
+    
+    recipe = db.execute("SELECT id FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
+    if not recipe:
+        return jsonify({"error": "Рецепт не найден"}), 404
+
+    updates = []
+    values = []
+
+    if "title" in data:
+        title = data["title"].strip()
+        if not title:
+            return jsonify({"error": "Название не может быть пустым"}), 400
+        updates.append("title = ?")
+        values.append(title)
+
+    if "description" in data:
+        updates.append("description = ?")
+        values.append(data["description"].strip() if data["description"] else "")
+
+    if "instructions" in data:
+        updates.append("instructions = ?")
+        values.append(data["instructions"].strip() if data["instructions"] else "")
+
+    if not updates:
+        return jsonify({"error": "Нет полей для обновления"}), 400
+
+    values.append(recipe_id)
+
+    try:
+        db.execute(
+            f"UPDATE recipes SET {', '.join(updates)} WHERE id = ?",
+            tuple(values)
+        )
+        db.commit()
+
+        updated_recipe = db.execute("SELECT * FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
+
+        return jsonify({
+            "message": "Рецепт успешно обновлён",
+            "recipe": dict(updated_recipe)
+        }), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({
+            "error": "Ошибка при обновлении рецепта",
+            "details": str(e)
+        }), 500
 
 
 
