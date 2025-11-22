@@ -9,7 +9,7 @@ pip install -r requirements.txt
 
 ## Старт (Фронтенд)
 
-ыполнять в папке `Front-end\react`:
+Выполнять в папке `Front-end\react`:
 
 ```powershell
 cd Front-end\react
