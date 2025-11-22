@@ -4,7 +4,7 @@ export async function GET() {
   const recipes = [
     {
       id: 1,
-      title: 'Паста Карбонара',
+      name: 'Паста Карбонара',
       description: 'Классическая итальянская паста с беконом и сыром',
       ingredients: [
         { name: 'Спагетти', quantity: 200, unit: 'г' },
@@ -17,7 +17,35 @@ export async function GET() {
     },
     {
       id: 2,
-      title: 'Салат Цезарь',
+      name: 'Салат Цезарь',
+      description: 'Свежий салат с курицей и соусом цезарь',
+      ingredients: [
+        { name: 'Куриное филе', quantity: 300, unit: 'г' },
+        { name: 'Салат Айсберг', quantity: 1, unit: 'кочан' },
+        { name: 'Помидоры черри', quantity: 200, unit: 'г' },
+        { name: 'Сухарики', quantity: 100, unit: 'г' },
+        { name: 'Сыр Пармезан', quantity: 50, unit: 'г' },
+        { name: 'Соус Цезарь', quantity: 3, unit: 'ст.л.' }
+      ],
+      instructions: '1. Обжарьте куриное филе...\n2. Порвите салат руками...\n3. Нарежьте помидоры пополам...\n4. Смешайте все ингредиенты и заправьте соусом...'
+    },
+    {
+      id: 3,
+      name: 'Салат Цезарь',
+      description: 'Свежий салат с курицей и соусом цезарь',
+      ingredients: [
+        { name: 'Куриное филе', quantity: 300, unit: 'г' },
+        { name: 'Салат Айсберг', quantity: 1, unit: 'кочан' },
+        { name: 'Помидоры черри', quantity: 200, unit: 'г' },
+        { name: 'Сухарики', quantity: 100, unit: 'г' },
+        { name: 'Сыр Пармезан', quantity: 50, unit: 'г' },
+        { name: 'Соус Цезарь', quantity: 3, unit: 'ст.л.' }
+      ],
+      instructions: '1. Обжарьте куриное филе...\n2. Порвите салат руками...\n3. Нарежьте помидоры пополам...\n4. Смешайте все ингредиенты и заправьте соусом...'
+    },
+    {
+      id: 5,
+      name: 'Салат Цезарь',
       description: 'Свежий салат с курицей и соусом цезарь',
       ingredients: [
         { name: 'Куриное филе', quantity: 300, unit: 'г' },
