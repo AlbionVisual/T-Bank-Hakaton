@@ -57,23 +57,34 @@ export function ListItems<T>({
     if (selectedItem) {
       if (editMode) {
         setEditMode(false);
+        const products_before = await Api.getProducts();
         const ingredients = selectedItem.ingredients
           .map((ingredient: any) => ({
             product_name: ingredient.product_name,
             product_unit: ingredient.product_unit,
-            amount: ingredient.amount,
+            amount:
+              ingredient.amount !== undefined ? Number(ingredient.amount) : 1,
+            product_id: products_before.find(
+              (i: any) => i.name === ingredient.product_name
+            )?.id,
           }))
           .filter(
             (ingredient: any) =>
-              ingredient.product_id !== undefined &&
+              ingredient.product_name !== undefined &&
               ingredient.amount !== undefined
           );
-        await Api.updateRecipe(selectedItem.id, {
-          name: selectedItem.name,
+        console.log(selectedItem.id, {
+          name: selectedItem.title,
           description: selectedItem.description,
           instructions: selectedItem.instructions,
+          ingredients: ingredients,
         });
-        // await Api.(selectedItem.id, ingredients);
+        await Api.updateRecipeFull(selectedItem.id, {
+          name: selectedItem.title,
+          description: selectedItem.description,
+          instructions: selectedItem.instructions,
+          ingredients: ingredients,
+        });
         setCardRenderKey((prev) => prev + 1);
         setItems((prev) =>
           prev.map((itm) =>
@@ -112,6 +123,59 @@ export function ListItems<T>({
     setSelectedItem(resp);
     setCardRenderKey((prev) => prev + 1);
   };
+  const onDelete = async (id: number) => {
+    if (url === "recipes") {
+      await Api.deleteRecipe(id);
+      setItems((prev) => prev.filter((item) => keyExtractor(item) !== id));
+    } else if (url === "products") {
+      await Api.deleteProduct(id);
+      setItems((prev) => prev.filter((item) => keyExtractor(item) !== id));
+    } else if (url === "inventory") {
+      await Api.removeFromInventory(id);
+      setItems((prev) => prev.filter((item) => keyExtractor(item) !== id));
+    } else if (url === "menus") {
+      await Api.removeRecipeFromMenu(id);
+      setItems((prev) => prev.filter((item) => keyExtractor(item) !== id));
+    }
+  };
+  const onUpdate = async (id: number, name: string, description: string) => {
+    try {
+      if (url === "products") {
+        const item = items.find((item) => Number(keyExtractor(item)) === id);
+        if (item) {
+          await Api.updateProduct(id, {
+            name: name,
+            unit: description,
+          });
+          setItems((prev) =>
+            prev.map((item) =>
+              Number(keyExtractor(item)) === id
+                ? { ...item, name: name, unit: description }
+                : item
+            )
+          );
+          console.log(id, name, description, item);
+        }
+      } else if (url === "inventory") {
+        const item = items.find((item) => Number(keyExtractor(item)) === id);
+        if (item) {
+          const quantity = Number(description) || 0;
+          await Api.updateInventory(id, quantity);
+          setItems((prev) =>
+            prev.map((item) => {
+              if (Number(keyExtractor(item)) === id) {
+                return { ...item, name, quantity: quantity };
+              }
+              return item;
+            })
+          );
+        }
+      }
+      setCardRenderKey((prev) => prev + 1);
+    } catch (error) {
+      console.error("Ошибка при обновлении:", error);
+    }
+  };
 
   const body = loading ? (
     <div className="p-8 text-center">Загрузка...</div>
@@ -130,13 +194,24 @@ export function ListItems<T>({
             key={Number(keyExtractor?.(item)) + "_" + cardRenderKey}
             card_name={item.name}
             card_description={
-              item.description
+              url === "recipes" || url === "menus"
                 ? item.description
-                : item.quantity
-                ? `${item.quantity} ${item.unit}`
-                : item.unit !== undefined
+                : url === "inventory"
+                ? item.quantity || 0
+                : item.unit
+            }
+            persistent_description={
+              url === "recipes" || url === "menus"
+                ? ""
+                : url === "inventory"
                 ? item.unit
                 : ""
+            }
+            on_name_update={() => {}}
+            on_description_update={() => {}}
+            on_delete={() => onDelete(item.id)}
+            on_update={(name, description) =>
+              onUpdate(item.id, name, description)
             }
             redirect_url={
               redirectBasePath
@@ -146,6 +221,7 @@ export function ListItems<T>({
             on_click={
               redirectBasePath ? () => changeSelection(item) : undefined
             }
+            do_update={url !== "recipes" && url !== "menus"}
           />
         ))}
       </div>

@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 CORS(app, resources={r"/*": {
     "origins": "http://localhost:3000",
-    "methods": ["GET", "POST", "DELETE", "OPTIONS", "PATCH"],
+    "methods": ["GET", "POST", "DELETE", "OPTIONS", "PATCH", "PUT"],
     "allow_headers": ["Content-Type", "Authorization"],
     "supports_credentials": True
 }})
@@ -443,6 +443,7 @@ def update_recipe_with_ingredients(recipe_id):
                 "SELECT product_id, amount FROM recipe_ingredients WHERE recipe_id = ?",
                 (recipe_id,)
             ).fetchall()
+
             current_dict = {row["product_id"]: row["amount"] for row in current}
 
             new_dict = {ing["product_id"]: ing["amount"] for ing in new_ingredients}
@@ -459,11 +460,7 @@ def update_recipe_with_ingredients(recipe_id):
                         (recipe_id, product_id, amount)
                     )
 
-            for product_id in current_dict.keys() - new_dict.keys():
-                db.execute(
-                    "DELETE FROM recipe_ingredients WHERE recipe_id = ? AND product_id = ?",
-                    (recipe_id, product_id)
-                )
+
 
         except Exception as e:
             db.rollback()
@@ -668,7 +665,7 @@ def update_inventory(product_id):
         return jsonify({"error": "Продукт не найден"}), 404
 
     try:
-        # Пробуем обновить существующую запись
+
         result = db.execute(
             "UPDATE inventory SET quantity = ? WHERE product_id = ?",
             (quantity, product_id)
@@ -726,7 +723,71 @@ def remove_from_inventory(product_id):
         db.rollback()
         return jsonify({"error": str(e)}), 500
 
+@app.route('/shoplist', methods=['POST'])
+def shopping_list():
+    data = request.get_json()
+    recipe_ids = data["recipes"]
 
+    if not recipe_ids:
+        return jsonify({"error": "Укажите recipe_ids"}), 400
+    
+    if not recipe_ids:
+        return []
+
+    db = get_db()
+
+    placeholders = ",".join("?" for _ in recipe_ids)
+    required_query = f"""
+        SELECT 
+            p.id AS product_id,
+            p.name AS product_name,
+            p.unit AS unit,
+            SUM(ri.amount) AS total_required
+        FROM recipe_ingredients ri
+        JOIN products p ON ri.product_id = p.id
+        WHERE ri.recipe_id IN ({placeholders})
+        GROUP BY p.id, p.name, p.unit
+    """
+
+    required = db.execute(required_query, recipe_ids).fetchall()
+
+    if not required:
+        return []
+
+    product_ids = [row["product_id"] for row in required]
+    placeholders = ",".join("?" for _ in product_ids)
+
+    stock_query = f"""
+        SELECT product_id, quantity AS in_stock
+        FROM inventory
+        WHERE product_id IN ({placeholders})
+    """
+    stock_rows = db.execute(stock_query, product_ids).fetchall()
+    stock_dict = {row["product_id"]: row["in_stock"] for row in stock_rows}
+
+    shopping_list = []
+    for row in required:
+        product_id = row["product_id"]
+        needed = row["total_required"]
+        have = stock_dict.get(product_id, 0) or 0
+        to_buy = max(0, needed - have)
+
+        if to_buy > 0:
+            shopping_list.append({
+                "product_id": product_id,
+                "product_name": row["product_name"],
+                "unit": row["unit"],
+                "required": needed,
+                "in_stock": have,
+                "to_buy": to_buy
+            })
+    
+    shopping_list.sort(key=lambda x: x["product_name"]) 
+
+    return jsonify({
+        "message": f"Нужно докупить {len(shopping_list)} продуктов",
+        "to_buy": shopping_list
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)   

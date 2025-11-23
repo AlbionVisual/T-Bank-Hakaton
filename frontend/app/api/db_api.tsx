@@ -51,7 +51,7 @@ class Api {
 async updateRecipeFull(
   recipeId: number,
   data: {
-    title?: string;
+    name?: string;
     description?: string;
     instructions?: string;
     ingredients?: { product_id: number; amount: number }[];
@@ -254,6 +254,28 @@ async updateRecipeFull(
       method: "DELETE",
     });
   }
+
+  async getShoppingList(recipeIds: number[]) {
+    if (!recipeIds || recipeIds.length === 0) {
+      throw new Error("Укажите хотя бы один рецепт");
+    }
+
+    return this.request<{
+      message: string;
+      to_buy: {
+        product_id: number;
+        product_name: string;
+        unit: string | null;
+        required: number;
+        in_stock: number;
+        to_buy: number;
+      }[];
+    }>("/shoplist", {
+      method: "POST", 
+      body: JSON.stringify({ recipes: recipeIds }),
+    });
+  }
+
 }
 
 const api = new Api();

@@ -232,9 +232,11 @@ export default function DishCardEdit({
                   min="1"
                   className="w-16 rounded-md border-yellow-300 shadow-sm focus:border-yellow-300 focus:ring-yellow-300 sm:text-sm text-black"
                   value={ingredient.amount}
-                  onChange={(e) =>
-                    handleIngredientAmountChange(idx, e.target.value)
-                  }
+                  onChange={(e) => {
+                    if (Number(e.target.value) > 0) {
+                      handleIngredientAmountChange(idx, e.target.value);
+                    }
+                  }}
                   name={`ingredient-amount-${idx}`}
                   id={`ingredient-amount-${idx}`}
                 />
