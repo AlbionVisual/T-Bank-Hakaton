@@ -43,11 +43,12 @@ Refer to the provided Dockerfiles and `docker-compose.yml` for further customiza
 
 ## Development start
 
-Run from `./Back-end`:
+Run from `./Back-end` (windows):
 
 ```powershell
 venv\Scripts\activate
 pip install -r requirements.txt
+python ./app1/app.py
 ```
 
 run from `./frontend`:
