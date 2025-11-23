@@ -624,6 +624,7 @@ def add_to_inventory():
         db.execute(
             "INSERT INTO inventory (product_id, quantity) VALUES (?, ?)",
             (product_id, quantity)
+        
         )
         db.commit()
 

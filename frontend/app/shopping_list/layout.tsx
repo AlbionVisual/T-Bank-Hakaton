@@ -11,7 +11,7 @@ export default function ShoppingListLayout({
       url="inventory"
       renderItem={(item, index) => children}
       keyExtractor={(item: any) => item.id.toString()}
-      headerText="Уже есть"
+      headerText="Уже есть эти продукты"
     />
   );
 }
