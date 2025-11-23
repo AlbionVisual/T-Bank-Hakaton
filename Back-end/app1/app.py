@@ -539,7 +539,7 @@ def remove_recipe_from_menu(recipe_id):
            FROM menu_recipes mr
            JOIN recipes r ON mr.recipe_id = r.id
            WHERE mr.menu_id = 1 AND mr.recipe_id = ?""",
-        (recipe_id)
+        (recipe_id,)
     ).fetchone()
 
     if not link:
@@ -548,7 +548,7 @@ def remove_recipe_from_menu(recipe_id):
     try:
         db.execute(
             "DELETE FROM menu_recipes WHERE menu_id = 1 AND recipe_id = ?",
-            (recipe_id)
+            (recipe_id,)
         )
         db.commit()
 

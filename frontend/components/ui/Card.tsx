@@ -90,6 +90,7 @@ export function Card({
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 on_delete();
               }}
               className="text-gray-500 hover:text-gray-700 text-lg">

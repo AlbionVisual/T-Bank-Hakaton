@@ -10,12 +10,14 @@ export function ListItems<T>({
   keyExtractor,
   redirectBasePath,
   headerText = "Меню",
+  refreshKey = 0,
 }: {
   url: string;
   renderItem: (item: T, index: number) => React.ReactNode;
   keyExtractor: (item: T) => string | number;
   redirectBasePath?: string;
   headerText?: string;
+  refreshKey?: number;
 }) {
   const [items, setItems] = useState<any[]>([]);
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -51,7 +53,7 @@ export function ListItems<T>({
       }
     };
     fetchItems();
-  }, [url]);
+  }, [url, refreshKey]);
 
   const handleSave = async () => {
     if (selectedItem) {
@@ -257,9 +259,7 @@ export function ListItems<T>({
 
   return (
     <div
-      className={`min-h-screen transition-all duration-300 ${
-        selectedItem ? "pr-80" : ""
-      }`}>
+      className={`transition-all duration-300 ${selectedItem ? "pr-80" : ""}`}>
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-black">{headerText}</h1>
