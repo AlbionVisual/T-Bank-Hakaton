@@ -263,7 +263,7 @@ export function ListItems<T>({
     <div
       className={`transition-all duration-300 ${selectedItem ? "pr-80" : ""}`}>
       <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center gap-7">
           <h1 className="text-2xl font-bold text-black">{headerText}</h1>
           {description && <p className="text-sm text-black">{description}</p>}
         </div>
