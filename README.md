@@ -56,3 +56,8 @@ run from `./frontend`:
 npm install
 npm run dev
 ```
+
+## Зеркало репозитория:
+
+На github наша работа будет продолжаться и после контеста:
+https://github.com/AlbionVisual/T-Bank-Hakaton/tree/solution

@@ -62,6 +62,7 @@ export default function MenuLayout({
         keyExtractor={(item: any) => item.id}
         headerText="Меню"
         refreshKey={refreshKey}
+        description="Тут все блюда которые мы будем готовить"
       />
       <PlusButton
         onClick={async () => {

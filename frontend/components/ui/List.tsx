@@ -11,6 +11,7 @@ export function ListItems<T>({
   redirectBasePath,
   headerText = "Меню",
   refreshKey = 0,
+  description = "",
 }: {
   url: string;
   renderItem: (item: T, index: number) => React.ReactNode;
@@ -18,6 +19,7 @@ export function ListItems<T>({
   redirectBasePath?: string;
   headerText?: string;
   refreshKey?: number;
+  description?: string;
 }) {
   const [items, setItems] = useState<any[]>([]);
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -261,8 +263,9 @@ export function ListItems<T>({
     <div
       className={`transition-all duration-300 ${selectedItem ? "pr-80" : ""}`}>
       <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-black">{headerText}</h1>
+          {description && <p className="text-sm text-black">{description}</p>}
         </div>
       </header>
       {body}

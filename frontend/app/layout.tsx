@@ -56,7 +56,7 @@ export default function RootLayout({
                     "text-base hover:text-yellow-300 transition duration-200"
               }
               href="/shopping_list">
-              Список покупок
+              Что у меня есть
             </Link>
             <Link
               className={

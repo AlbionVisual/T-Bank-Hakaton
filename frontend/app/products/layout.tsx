@@ -57,6 +57,7 @@ export default function ProductsLayout({
         keyExtractor={(item: any) => item.id.toString()}
         headerText="Продукты"
         refreshKey={refreshKey}
+        description="Тут все продукты, которые только могут использоваться в приложении"
       />
       <PlusButton
         onClick={() => {
@@ -74,7 +75,7 @@ export default function ProductsLayout({
             </h1>
             <input
               type="text"
-              className="w-7/8 p-2 rounded-md bg-white"
+              className="w-7/8 p-2 rounded-md bg-white mb-4"
               placeholder="Название продукта"
               value={productName}
               onChange={handleNameChange}

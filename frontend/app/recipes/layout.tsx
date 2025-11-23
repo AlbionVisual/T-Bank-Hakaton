@@ -54,6 +54,7 @@ export default function RecepiesLayout({
         keyExtractor={(item) => item.id.toString()}
         redirectBasePath="/recipes"
         headerText="Блюда"
+        description="Тут все блюда, которые можно приготовить"
       />
       <PlusButton
         onClick={() => {
