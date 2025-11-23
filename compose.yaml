@@ -1,0 +1,33 @@
+services:
+  python-back-end:
+    build:
+      context: ./Back-end
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    # env_file: ./.env  # Uncomment if .env file exists in ./Back-end
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./Back-end/OurTeamDB.db:/app/OurTeamDB.db
+    # networks:
+    #   - appnet
+
+  typescript-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    # env_file: ./.env  # Uncomment if .env file exists in ./frontend
+    ports:
+      - "3000:3000" # Next.js default port
+    # networks:
+    #   - appnet
+    depends_on:
+      - python-back-end # If frontend calls backend API
+
+# Uncomment the following to enable a shared network if services need to communicate
+#networks:
+#  appnet:
+#    driver: bridge
